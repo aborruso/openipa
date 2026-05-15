@@ -1,0 +1,19 @@
+# binario compilato
+openipa-pp-cli
+openipa
+
+# output Go
+*.test
+*.out
+
+# file locali printing-press
+.printing-press-pii-polish.json
+.printing-press-tools-polish.json
+dogfood-results.json
+workflow-verify-report.json
+
+# config locale Claude
+.claude/settings.local.json
+
+# staging e tmp
+/tmp/

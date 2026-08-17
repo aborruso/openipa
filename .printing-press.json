@@ -3,11 +3,25 @@
   "generated_at": "2026-05-14T21:55:53.182927145Z",
   "printing_press_version": "4.6.1",
   "api_name": "openipa",
+  "display_name": "IndicePA",
+  "description": "Search Italy's IndicePA for public administrations, PEC addresses, IPA codes, billing codes, and compliance details.",
   "cli_name": "openipa-pp-cli",
+  "creator": {
+    "handle": "aborruso",
+    "name": "aborruso"
+  },
   "run_id": "20260514-212234",
   "printer": "aborruso",
   "printer_name": "aborruso",
   "category": "developer-tools",
+  "mcp_binary": "openipa-pp-mcp",
+  "mcp_tool_count": 31,
+  "mcp_public_tool_count": 31,
+  "mcp_ready": "full",
+  "auth_type": "api_key",
+  "auth_env_vars": [
+    "IPA_auth_id"
+  ],
   "novel_features": [
     {
       "name": "Doctor compliance PA",

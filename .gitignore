@@ -1,6 +1,6 @@
 # binario compilato
-openipa-pp-cli
-openipa
+/openipa-pp-cli
+/openipa
 
 # output Go
 *.test

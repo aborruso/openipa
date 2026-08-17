@@ -9,7 +9,7 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X openipa-pp-cli/internal/cli.version={{ .Version }}
+      - -s -w -X github.com/mvanhorn/printing-press-library/library/developer-tools/openipa/internal/cli.version={{ .Version }}
     targets:
       - darwin_amd64
       - darwin_arm64
@@ -44,8 +44,8 @@ brews:
     repository:
       owner: aborruso
       name: homebrew-tap
-    homepage: "https://github.com/aborruso/openipa-pp-cli"
-    description: "Il primo CLI per l'Indice delle Pubbliche Amministrazioni — lookup istantaneo di enti, PEC, codici IPA,..."
+    homepage: "https://github.com/mvanhorn/printing-press-library"
+    description: "Search Italy's IndicePA for public administrations, PEC addresses, IPA codes, billing codes, and compliance details."
     install: |
       bin.install "openipa-pp-cli"
       bin.install "openipa-pp-mcp"

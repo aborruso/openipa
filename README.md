@@ -20,11 +20,11 @@ openipa risolve tre problemi concreti:
 
 ```bash
 # 1. Trova il codice IPA dell'ente
-openipa-pp-cli enti cerca --nome 'comune di Roma' --json | jq '.data.data[0].cod_amm'
+openipa-pp-cli enti cerca --nome 'comune di Roma' --json | jq '.[0].cod_amm'
 # → "c_h501"
 
 # 2. Verifica che l'ente sia abilitato SFE e ottieni il cod_uni_ou
-openipa-pp-cli fatturazione cf --cf 02438750586 --json | jq '.data.data[0].OU[0].cod_uni_ou'
+openipa-pp-cli fatturazione cf --cf 02438750586 --json | jq '.[0].OU[0].cod_uni_ou'
 # → "ONVE0B"
 
 # 3. Verifica compliance completa (SFE + NSO + domicilio)
@@ -59,24 +59,44 @@ openipa-pp-cli enti tree agid --json
 openipa-pp-cli uo list --codice agid --json
 ```
 
+Created by [@aborruso](https://github.com/aborruso) (aborruso).
+
 ## Install
 
-The recommended path installs both the `openipa-pp-cli` binary and the `pp-openipa` agent skill in one shot:
+The recommended path installs both the `openipa-pp-cli` binary and the `pp-openipa` agent skill (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot, and other agents supported by the upstream [`skills`](https://github.com/vercel-labs/skills) CLI) in one shot:
 
 ```bash
-npx -y @mvanhorn/printing-press install openipa
+npx -y @mvanhorn/printing-press-library install openipa
 ```
 
 For CLI only (no skill):
 
 ```bash
-npx -y @mvanhorn/printing-press install openipa --cli-only
+npx -y @mvanhorn/printing-press-library install openipa --cli-only
 ```
 
+For skill only — installs the skill into the same agents as the default command above, but skips the CLI binary (use this to update or reinstall just the skill):
 
-### Without Node
+```bash
+npx -y @mvanhorn/printing-press-library install openipa --skill-only
+```
 
-The generated install path is category-agnostic until this CLI is published. If `npx` is not available before publish, install Node or use the category-specific Go fallback from the public-library entry after publish.
+To constrain the skill install to one or more specific agents (repeatable — agent names match the [`skills`](https://github.com/vercel-labs/skills) CLI):
+
+```bash
+npx -y @mvanhorn/printing-press-library install openipa --agent claude-code
+npx -y @mvanhorn/printing-press-library install openipa --agent claude-code --agent codex
+```
+
+### Without Node (Go fallback)
+
+If `npx` isn't available (no Node, offline), install the CLI directly via Go (requires Go 1.26.6 or newer):
+
+```bash
+go install github.com/mvanhorn/printing-press-library/library/developer-tools/openipa/cmd/openipa-pp-cli@latest
+```
+
+This installs the CLI only — no skill.
 
 ### Pre-built binary
 
@@ -84,6 +104,14 @@ Download a pre-built binary for your platform from the [latest release](https://
 
 <!-- pp-hermes-install-anchor -->
 ## Install for Hermes
+
+Install the CLI binary first. The installer writes binaries to a per-user managed bin directory by default: `$HOME/.local/bin` on macOS/Linux and `%LOCALAPPDATA%\Programs\PrintingPress\bin` on Windows.
+
+```bash
+npx -y @mvanhorn/printing-press-library install openipa --cli-only
+```
+
+Then install the focused Hermes skill.
 
 From the Hermes CLI:
 
@@ -97,13 +125,54 @@ Inside a Hermes chat session:
 /skills install mvanhorn/printing-press-library/cli-skills/pp-openipa --force
 ```
 
+Restart the Hermes session or gateway if the newly installed skill is not visible immediately.
+
 ## Install for OpenClaw
 
-Tell your OpenClaw agent (copy this):
+Install both the CLI binary and the focused OpenClaw skill. The installer defaults binaries to a per-user bin directory (`$HOME/.local/bin` on macOS/Linux, `%LOCALAPPDATA%\Programs\PrintingPress\bin` on Windows):
 
+```bash
+npx -y @mvanhorn/printing-press-library install openipa --agent openclaw
 ```
-Install the pp-openipa skill from https://github.com/mvanhorn/printing-press-library/tree/main/cli-skills/pp-openipa. The skill defines how its required CLI can be installed.
+
+Restart the OpenClaw session or gateway if the newly installed skill is not visible immediately.
+
+## Use with Claude Desktop
+
+This CLI ships an [MCPB](https://github.com/modelcontextprotocol/mcpb) bundle — Claude Desktop's standard format for one-click MCP extension installs (no JSON config required).
+
+To install:
+
+1. Download the `.mcpb` for your platform from the [latest release](https://github.com/mvanhorn/printing-press-library/releases/tag/openipa-current).
+2. Double-click the `.mcpb` file. Claude Desktop opens and walks you through the install.
+3. Fill in `IPA_auth_id` when Claude Desktop prompts you.
+
+Requires Claude Desktop 1.0.0 or later. Pre-built bundles ship for macOS Apple Silicon (`darwin-arm64`) and Windows (`amd64`, `arm64`); for other platforms, use the manual config below.
+
+<details>
+<summary>Manual JSON config (advanced)</summary>
+
+If you can't use the MCPB bundle (older Claude Desktop, unsupported platform), install the MCP binary and configure it manually.
+
+
+Install the MCP binary from this CLI's published public-library entry or pre-built release.
+
+Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "openipa": {
+      "command": "openipa-pp-mcp",
+      "env": {
+        "IPA_auth_id": "<your-key>"
+      }
+    }
+  }
+}
 ```
+
+</details>
 
 ## Authentication
 
@@ -115,17 +184,17 @@ Richiede un AUTH_ID gratuito da registrare su indicepa.gov.it (rilasciato immedi
 # Trova il codice IPA di un ente per nome
 openipa-pp-cli enti cerca --nome 'comune di Roma'
 
-
 # Dati anagrafici completi di un ente per codice IPA
 openipa-pp-cli enti get --codice c_h501 --json
-
 
 # Codice destinatario SDI (cod_uni_ou) per fatturazione elettronica
 openipa-pp-cli fatturazione cf --cf 80012000826 --json
 
-
 # Tutti i canali PA (FE + NSO + domicilio digitale) in un colpo solo
 openipa-pp-cli cf 97735020584 --json
+
+# Statistiche enti per regione
+openipa-pp-cli stats --regione Lazio --json
 
 ```
 
@@ -134,7 +203,7 @@ openipa-pp-cli cf 97735020584 --json
 These capabilities aren't available in any other tool for this API.
 
 ### Workflow PA in un comando
-- **`cf`** — Dato un codice fiscale, verifica in un colpo se l'ente ha SFE attivo, NSO abilitato e domicilio digitale — checklist compliance PA completa.
+- **`doctor`** — Dato un codice fiscale, verifica in un colpo se l'ente ha SFE attivo, NSO abilitato e domicilio digitale — checklist compliance PA completa.
 
   _Un agente che verifica la compliance PA deve sapere se un ente è pronto a ricevere fatture, ordini e notifiche digitali in un unico check._
 
@@ -170,6 +239,14 @@ These capabilities aren't available in any other tool for this API.
   openipa-pp-cli cerca <pec-ente> --json
   ```
 
+- **`cf`** — Dato il codice fiscale di un ente PA, verifica in parallelo SFE, NSO e domicilio digitale e produce una checklist compliance completa.
+
+  _Un agente che deve validare un ente prima di emettere fattura o ordine ottiene tutto in un unico roundtrip parallelo._
+
+  ```bash
+  openipa-pp-cli cf 97735020584 --json
+  ```
+
 ## Orchestrazione AI
 
 Questa CLI è progettata per essere usata da agenti AI in pipeline automatizzate, non solo da umani al terminale.
@@ -193,8 +270,7 @@ Exit code `0` = match trovato, `2` = nessun match → fallback a `--help`. Quest
 
 ```bash
 # pattern tipico per un agente orchestratore
-CMD=$(openipa-pp-cli which "verifica PEC attiva" --json | jq -r '.matches[0].entry.command')
-openipa-pp-cli $CMD --agent ...
+openipa-pp-cli which "verifica PEC attiva" --json | jq -r '.matches[0].entry.command'
 ```
 
 L'indice copre 11 capability chiave. Per vedere l'elenco completo:
@@ -237,8 +313,10 @@ Run `openipa-pp-cli --help` for the full command reference and flag list.
 
 Aree Organizzative Omogenee degli enti
 
+- **`openipa-pp-cli aoo cerca`** - Dati di una AOO per codice univoco IPA (WS18) — richiede `cod_uni_aoo` tipo "A463BFE", non il cod_aoo testuale
 - **`openipa-pp-cli aoo get`** - AOO di un ente con filtro opzionale per codice AOO
 - **`openipa-pp-cli aoo list`** - Lista delle AOO di un ente
+- **`openipa-pp-cli aoo storico`** - Lista AOO di un ente (attive e cessate) per codice IPA; espone `cod_uni_aoo` (WS19)
 
 ### cerca
 
@@ -278,6 +356,14 @@ Nodi di Smistamento Ordini (NSO) per ordini elettronici
 - **`openipa-pp-cli nso cf`** - Nodi NSO per codice fiscale ente
 - **`openipa-pp-cli nso ente`** - Canali NSO attivi di un ente per codice IPA
 
+### pec
+
+Indirizzi PEC degli enti IPA
+
+- **`openipa-pp-cli pec ente`** - PEC attive di un ente per codice IPA (WS20)
+- **`openipa-pp-cli pec storico`** - Storico PEC di un ente (attive e cessate) per codice IPA (WS21)
+- **`openipa-pp-cli pec cerca`** - Storia di un indirizzo PEC specifico nell'IPA (WS22)
+
 ### uo
 
 Unità Organizzative degli enti
@@ -302,7 +388,6 @@ Responsabile Transizione Digitale (portale IPA — non disponibile via API pubbl
 - **`openipa-pp-cli rtd cerca`** - Cerca RTD per nominativo, ente, area geografica
 
 Filtri disponibili: `--nominativo`, `--ente`, `--codice-ente`, `--area`, `--categoria`.
-
 
 ## Output Formats
 
@@ -338,69 +423,6 @@ This CLI is designed for AI agent consumption:
 
 Exit codes: `0` success, `2` usage error, `3` not found, `4` auth error, `5` API error, `7` rate limited, `10` config error.
 
-## Use with Claude Code
-
-Install the focused skill — it auto-installs the CLI on first invocation:
-
-```bash
-npx skills add mvanhorn/printing-press-library/cli-skills/pp-openipa -g
-```
-
-Then invoke `/pp-openipa <query>` in Claude Code. The skill is the most efficient path — Claude Code drives the CLI directly without an MCP server in the middle.
-
-<details>
-<summary>Use as an MCP server in Claude Code (advanced)</summary>
-
-If you'd rather register this CLI as an MCP server in Claude Code, install the MCP binary first:
-
-
-Install the MCP binary from this CLI's published public-library entry or pre-built release.
-
-Then register it:
-
-```bash
-claude mcp add openipa openipa-pp-mcp -e IPA_auth_id=<your-key>
-```
-
-</details>
-
-## Use with Claude Desktop
-
-This CLI ships an [MCPB](https://github.com/modelcontextprotocol/mcpb) bundle — Claude Desktop's standard format for one-click MCP extension installs (no JSON config required).
-
-To install:
-
-1. Download the `.mcpb` for your platform from the [latest release](https://github.com/mvanhorn/printing-press-library/releases/tag/openipa-current).
-2. Double-click the `.mcpb` file. Claude Desktop opens and walks you through the install.
-3. Fill in `IPA_auth_id` when Claude Desktop prompts you.
-
-Requires Claude Desktop 1.0.0 or later. Pre-built bundles ship for macOS Apple Silicon (`darwin-arm64`) and Windows (`amd64`, `arm64`); for other platforms, use the manual config below.
-
-<details>
-<summary>Manual JSON config (advanced)</summary>
-
-If you can't use the MCPB bundle (older Claude Desktop, unsupported platform), install the MCP binary and configure it manually.
-
-
-Install the MCP binary from this CLI's published public-library entry or pre-built release.
-
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "openipa": {
-      "command": "openipa-pp-mcp",
-      "env": {
-        "IPA_auth_id": "<your-key>"
-      }
-    }
-  }
-}
-```
-
-</details>
-
 ## Health Check
 
 ```bash
@@ -433,8 +455,8 @@ Environment variables:
 
 - **Errore 902: Parametro AUTH_ID errato** — export IPA_auth_id=<tuo_auth_id> oppure registra un nuovo AUTH_ID su indicepa.gov.it
 - **Errore 900: Parametro AUTH_ID mancante** — Imposta la variabile d'ambiente IPA_auth_id o aggiungi auth_id al file ~/.config/openipa/config.toml
-- **HTTP 500 su comandi pec** — I web service WS20/WS21/WS22 di IPA hanno instabilità note; riprova più tardi
-- **Nessun risultato da 'enti cerca'** — Usa parole parziali (es. 'Roma' non 'Comune di Roma')
+- **`aoo cerca` richiede cod_uni_aoo, non cod_aoo** — Il codice da passare è l'identificatore univoco IPA a 7 caratteri (es. `A463BFE`), non il cod_aoo testuale dell'ente (es. `agid_aoo`). Per trovarlo: `openipa-pp-cli aoo storico <cod_amm> --json | jq '.[].cod_uni_aoo'`
+- **Nessun risultato da 'enti cerca'** — Usa parole parziali (es. 'Roma' non 'Comune di Roma') e verifica i filtri con `openipa-pp-cli enti cerca --help`
 
 ---
 

@@ -1,4 +1,4 @@
-// Copyright 2026 aborruso. Licensed under Apache-2.0. See LICENSE.
+// Copyright 2026 aborruso and contributors. Licensed under Apache-2.0. See LICENSE.
 // Hand-written addition: PortaleServices client — preserve on regeneration.
 
 package client
@@ -6,10 +6,10 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"openipa-pp-cli/internal/cliutil"
 	"io"
 	"math"
 	"net/http"
-	"openipa-pp-cli/internal/cliutil"
 	"os"
 	"strings"
 	"time"
@@ -66,7 +66,7 @@ func (c *Client) PostJSON(path string, body any) (json.RawMessage, int, error) {
 
 		if resp.StatusCode < 400 {
 			c.limiter.OnSuccess()
-			return json.RawMessage(respBody), resp.StatusCode, nil
+			return json.RawMessage(sanitizeJSONResponse(respBody)), resp.StatusCode, nil
 		}
 
 		apiErr := &APIError{Method: "POST", Path: path, StatusCode: resp.StatusCode, Body: truncateBody(respBody)}

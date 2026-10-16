@@ -1,5 +1,11 @@
 # LOG
 
+## 2026-10-16 - `enti istat --codice` non trovava gli enti senza AOO
+
+- **Segnalazione di partenza:** per Pietro Biase oam_2 (Ordine Avvocati di Mondovì) era nel dataset IPA ma non online. Misurato: oam_2 c'è in WS05, nella ricerca del portale e nei dataset "Enti" e "pec attive", aggiornati entrambi il 16/10. Manca soltanto il domicilio digitale: WS23 restituisce 0 elementi, il dataset "Domicili digitali" non ha l'ente e la PEC risulta registrata come email, non come domicilio. L'ente ha 0 AOO.
+- **Il difetto della CLI:** `--codice` cercava nel dataset AOO, quindi un ente senza AOO risultava inesistente. Ora usa il dataset Enti, una riga per ente con `Codice_comune_ISTAT` della sede. Issue [#2328](https://github.com/mvanhorn/printing-press-library/issues/2328), PR [#2329](https://github.com/mvanhorn/printing-press-library/pull/2329), fatta a mano su branch `fix/openipa-istat-codice-no-aoo` (non `feat/openipa`: la skill di publish non la vede e ne aprirebbe una seconda).
+- **Il sorgente era di nuovo indietro:** mancava la PR di flotta #1978 dell'11/09 (niente retry su errori ambigui per le scritture) con il ledger 2026.9.1. Riportata prima del fix, in un commit separato. Dopo il sync il confronto col catalogo dà solo `go.mod`.
+
 ## 2026-08-17 — il bundle `.mcpb` che la release prometteva e non consegnava, e due difetti trovati sotto
 
 - **Il punto di partenza era una frase falsa.** Le note di [`openipa-current`](https://github.com/mvanhorn/printing-press-library/releases/tag/openipa-current) dicono «download the matching `.mcpb` file and double-click to install», ma nella release ci sono sei binari e nessun bundle. Metà della colpa è loro — quelle note sono una stringa fissa in `build-mcpb.yml`, stampata anche quando il bundle non esiste, e il warning che l'accompagna («likely pre-v3.0.0») dà pure una diagnosi sbagliata. L'altra metà era nostra: `manifest.json` non c'era davvero.

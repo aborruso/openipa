@@ -1,5 +1,14 @@
 # LOG
 
+## 2026-10-17 - `--csv`, `--plain`, `--select` e `--quiet` ignorati da quasi tutti i comandi
+
+- **Trovato testando `enti istat`:** `--csv` restituiva JSON. Una matrice dal vivo su tutti i 35 comandi di lettura ha mostrato che il problema riguarda tutta la CLI: `--csv` e `--plain` non funzionavano in nessun comando, `--select` dava `{}` sui 19 comandi dei web service, `--quiet` stampava comunque in 18 comandi scritti a mano.
+- **Due cause.** Tutte le risposte IPA stanno dentro `{result:{cod_err,...}, data}`, e i renderer guardavano il primo livello. I comandi scritti a mano costruivano un proprio envelope JSON o testo e non passavano da `printOutputWithFlags`.
+- **`--plain` non era una lacuna del generatore:** i template correnti (press 4.32) hanno `printPlain`; openipa è una stampa 4.6.1. Prima l'avevo creduto un difetto di tutto il catalogo contando `flags.plain` negli helper, ma quella stringa compare solo nella condizione della tabella.
+- **`--compact` non era rotto:** sulle liste tiene i campi scalari presenti nell'80% delle righe, e le righe IPA sono tutte così. L'avevo messo nella issue per errore e l'ho tolto.
+- **Vincolo rispettato:** l'output `--json` e quello in pipe sono identici byte per byte alla 2026.10.1 su tutti i 35 comandi, quindi le ricette `jq` documentate non cambiano.
+- Issue [#2331](https://github.com/mvanhorn/printing-press-library/issues/2331), PR [#2332](https://github.com/mvanhorn/printing-press-library/pull/2332), branch `fix/openipa-output-flags`.
+
 ## 2026-10-16 - `enti istat --codice` non trovava gli enti senza AOO
 
 - **Segnalazione di partenza:** per Pietro Biase oam_2 (Ordine Avvocati di Mondovì) era nel dataset IPA ma non online. Misurato: oam_2 c'è in WS05, nella ricerca del portale e nei dataset "Enti" e "pec attive", aggiornati entrambi il 16/10. Manca soltanto il domicilio digitale: WS23 restituisce 0 elementi, il dataset "Domicili digitali" non ha l'ente e la PEC risulta registrata come email, non come domicilio. L'ente ha 0 AOO.

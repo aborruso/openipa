@@ -8,6 +8,7 @@
 - **`--compact` non era rotto:** sulle liste tiene i campi scalari presenti nell'80% delle righe, e le righe IPA sono tutte così. L'avevo messo nella issue per errore e l'ho tolto.
 - **Vincolo rispettato:** l'output `--json` e quello in pipe sono identici byte per byte alla 2026.10.1 su tutti i 35 comandi, quindi le ricette `jq` documentate non cambiano.
 - Issue [#2331](https://github.com/mvanhorn/printing-press-library/issues/2331), PR [#2332](https://github.com/mvanhorn/printing-press-library/pull/2332), branch `fix/openipa-output-flags`.
+- **2026-10-18:** #2332 mergiata (release 2026.10.2). Greptile aveva due rilievi (`--dry-run --quiet` stampava ancora l'envelope; `printPlain` ignorava gli errori di scrittura), corretti, poi 5/5. Riportati nel sorgente `CHANGELOG.md`, `.printing-press-release.json` e `var version`; il confronto col catalogo dà solo `go.mod` e i quattro report esclusi dal `.gitignore`.
 
 ## 2026-10-16 - `enti istat --codice` non trovava gli enti senza AOO
 
